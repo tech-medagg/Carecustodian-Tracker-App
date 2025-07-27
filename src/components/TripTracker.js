@@ -224,10 +224,7 @@ const TripTracker = () => {
               <h2 className="section-title">Route Map</h2>
               <div className="map-wrapper">
                 <LoadScript
-                  googleMapsApiKey={
-                    process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 
-                    'AIzaSyB3bE3_bl1SsxesPAXzD0EuY7ns3f5957I'
-                  }
+                  googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
                 >
                   <GoogleMap
                     mapContainerStyle={containerStyle}

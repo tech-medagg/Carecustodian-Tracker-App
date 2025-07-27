@@ -16,7 +16,7 @@ Before running this application, you need to set up a Google Maps API key:
 4. Create credentials (API Key) for the enabled APIs
 5. Create a `.env` file in the root directory with:
    ```
-   REACT_APP_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+   REACT_APP_GOOGLE_MAPS_API_KEY=your_actual_api_key_here
    ```
 
 ## Getting Started
