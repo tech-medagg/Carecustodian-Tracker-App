@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CircularProgress, Box } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TripsProvider } from './contexts/TripsContext'; 
 import MainLayout from './components/common/MainLayout';
 import Login from './pages/Auth/Login';
 import NotFound from './pages/Shared/NotFound';
@@ -207,7 +208,9 @@ const App = () => {
       <CssBaseline />
       <Router>
         <AuthProvider>
-          <AppContent />
+          <TripsProvider> 
+            <AppContent />
+          </TripsProvider>
         </AuthProvider>
       </Router>
     </ThemeProvider>

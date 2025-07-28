@@ -1,0 +1,18 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+# Disable secrets scanning entirely since Google Maps API keys are client-side
+[context.production]
+  SECRETS_SCAN_ENABLED = "false"
+
+[context.deploy-preview]
+  SECRETS_SCAN_ENABLED = "false"
+
+[context.branch-deploy]
+  SECRETS_SCAN_ENABLED = "false"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 

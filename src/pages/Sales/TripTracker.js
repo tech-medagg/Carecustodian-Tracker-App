@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GoogleMap, LoadScript, Polyline, Marker } from '@react-google-maps/api';
 import { FaPlay, FaStop, FaRoute, FaExclamationTriangle } from 'react-icons/fa';
 import { Box, Button, Card, CardContent, Typography, CircularProgress, Alert, Paper } from '@mui/material';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
+import 'leaflet-defaulticon-compatibility';
 
-// Removed unused containerStyle variable
+// Leaflet marker icon fix
+import L from 'leaflet';
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
 
-const center = {
-  lat: 20.5937, // Center of India
-  lng: 78.9629
-};
+const center = [20.5937, 78.9629]; // Center of India [lat, lng]
 
-const RATE_PER_KM = 10; // ₹10 per km
+const RATE_PER_KM = 3; // ₹3 per km
 
 // Haversine formula to calculate distance between two coordinates in kilometers
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -36,7 +43,6 @@ const TripTracker = () => {
     coordinates: []
   });
   const [currentPosition, setCurrentPosition] = useState(null);
-  const [mapsError, setMapsError] = useState(null);
   const [geoError, setGeoError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const watchId = useRef(null);
@@ -169,11 +175,6 @@ const TripTracker = () => {
     }
   }, []);
 
-  const pathCoordinates = tripData.coordinates.map(coord => ({
-    lat: coord.lat,
-    lng: coord.lng
-  }));
-
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -270,46 +271,31 @@ const TripTracker = () => {
               <Typography variant="h6" gutterBottom>
                 Route Map
               </Typography>
-              <Box sx={{ height: 300, position: 'relative', borderRadius: 1, overflow: 'hidden' }}>
-                {!process.env.REACT_APP_GOOGLE_MAPS_API_KEY ? (
-                  <Alert severity="error">
-                    Google Maps API key is missing. Please check your configuration.
-                  </Alert>
-                ) : mapsError ? (
-                  <Alert severity="error">
-                    {mapsError}
-                  </Alert>
-                ) : (
-                  <LoadScript
-                    googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
-                    onError={() => setMapsError('Failed to load Google Maps')}
-                  >
-                    <GoogleMap
-                      mapContainerStyle={{ width: '100%', height: '100%' }}
-                      center={currentPosition || center}
-                      zoom={currentPosition ? 14 : 4}
-                    >
-                      {pathCoordinates.length > 0 && (
-                        <Polyline
-                          path={pathCoordinates}
-                          options={{
-                            strokeColor: '#3B82F6',
-                            strokeOpacity: 1.0,
-                            strokeWeight: 4
-                          }}
-                        />
-                      )}
-                      {currentPosition && (
-                        <Marker
-                          position={currentPosition}
-                          icon={{
-                            url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-                          }}
-                        />
-                      )}
-                    </GoogleMap>
-                  </LoadScript>
-                )}
+              <Box sx={{ height: 400, width: '100%', borderRadius: 1, overflow: 'hidden' }}>
+                <MapContainer 
+                  center={currentPosition ? [currentPosition.lat, currentPosition.lng] : center} 
+                  zoom={currentPosition ? 13 : 4}
+                  style={{ height: '100%', width: '100%' }}
+                  scrollWheelZoom={true}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  
+                  {tripData.coordinates.length > 0 && (
+                    <Polyline 
+                      positions={tripData.coordinates.map(coord => [coord.lat, coord.lng])} 
+                      pathOptions={{ color: 'blue' }}
+                    />
+                  )}
+                  
+                  {currentPosition && (
+                    <Marker position={[currentPosition.lat, currentPosition.lng]}>
+                      <Popup>Your current location</Popup>
+                    </Marker>
+                  )}
+                </MapContainer>
               </Box>
             </CardContent>
           </Card>

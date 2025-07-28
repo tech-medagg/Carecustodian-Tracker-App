@@ -1,0 +1,22 @@
+{
+  "build": {
+    "outputPath": "build",
+    "staticFiles": [
+      "index.html",
+      "static/css",
+      "static/js",
+      "static/media"
+    ],
+    "assets": [
+      "favicon.ico",
+      "manifest.json",
+      "robots.txt"
+    ]
+  },
+  "deployment": {
+    "type": "github-pages",
+    "branch": "main",
+    "directory": "build",
+    "cleanup": true
+  }
+}

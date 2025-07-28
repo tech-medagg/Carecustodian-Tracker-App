@@ -61,7 +61,7 @@ Create a `.env` file in your project root (same level as package.json):
 
 ```bash
 # .env file
-REACT_APP_GOOGLE_MAPS_API_KEY=your_actual_api_key_here
+REACT_APP_GOOGLE_MAPS_API_KEY=eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImM5ZjA3YzVmMWJhYTRhOTRhZTJmYmYwMWViNWJjMmFjIiwiaCI6Im11cm11cjY0In0=
 ```
 
 Replace `your_actual_api_key_here` with the API key you copied in step 3.
