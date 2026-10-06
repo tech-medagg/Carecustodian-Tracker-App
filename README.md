@@ -1,8 +1,34 @@
 # Salesman Tracker - React Application
 
-A React-based application for tracking sales trips with Google Maps integration.
+A React-based application for tracking sales trips with location services and mapping integration.
 
 ## Prerequisites
+
+### MapIndia API Setup (Recommended for Destination Search)
+
+For enhanced destination search functionality in India, set up MapIndia API:
+
+1. Go to [MapMyIndia Developer Portal](https://www.mapmyindia.com/api/)
+2. Sign up for a developer account
+3. Create a new project and get your API key
+4. Create a `.env` file in the root directory and add:
+   ```
+   REACT_APP_MAPINDIA_API_KEY=your_mapindia_api_key_here
+   ```
+
+**Benefits of MapIndia API:**
+- Better address suggestions for Indian locations
+- More accurate geocoding for Indian addresses
+- Faster response times for Indian queries
+- Local language support
+
+### Fallback Location Services
+
+The application automatically falls back to OpenStreetMap Nominatim API if MapIndia API is not configured or fails. This ensures the destination search always works.
+
+**Note:** Other location features (current location tracking, reverse geocoding, routing) use free services and don't require API keys.
+
+### Google Maps API Setup
 
 Before running this application, you need to set up a Google Maps API key:
 

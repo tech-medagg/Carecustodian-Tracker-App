@@ -1,17 +1,14 @@
 /* Base styles */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-
 @import "leaflet/dist/leaflet.css";
 @import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
-@import "leaflet-defaulticon-compatibility";
 
 /* Reset and base styles */
 *, ::before, ::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  border: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -19,261 +16,13 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* App container */
-.app-container {
-  min-height: 100vh;
-  background-color: #f3f4f6;
-  padding: 1rem;
-}
-
-/* Main content */
-.main-content {
-  max-width: 56rem;
-  margin: 0 auto;
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 1.5rem;
-}
-
-/* App title */
-.app-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  color: #1f2937;
-}
-
-/* Button group */
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  align-items: center;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  cursor: pointer;
-  text-align: center;
-  white-space: nowrap;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-/* Button states */
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Button variants */
-.bg-blue-500 { background-color: #3b82f6; color: white; }
-.bg-blue-500:hover { background-color: #2563eb; }
-.bg-red-500 { background-color: #ef4444; color: white; }
-.bg-red-500:hover { background-color: #dc2626; }
-.bg-green-500 { background-color: #10b981; color: white; }
-.bg-green-500:hover { background-color: #059669; }
-.bg-yellow-500 { background-color: #f59e0b; color: white; }
-.bg-yellow-500:hover { background-color: #d97706; }
-.bg-gray-400 { background-color: #9ca3af; color: white; }
-
-/* Content grid */
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Summary card */
-.summary-card {
-  background-color: #f9fafb;
-  padding: 1rem;
-  border-radius: 0.5rem;
-}
-
-/* Section title */
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: #374151;
-}
-
-/* Summary content */
-.summary-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-/* Summary item */
-.summary-item {
-  color: #4b5563;
-}
-
-/* Font weights */
-.font-medium {
-  font-weight: 500;
-}
-
-/* Map container */
-.map-container {
-  background-color: #f9fafb;
-  padding: 1rem;
-  border-radius: 0.5rem;
-}
-
-/* Map wrapper */
-.map-wrapper {
-  height: 16rem;
-  width: 100%;
-  border-radius: 0.375rem;
-  overflow: hidden;
-}
-
-/* Flex utilities */
-.flex {
-  display: flex;
-}
-
-.items-center {
-  align-items: center;
-}
-
-/* Responsive styles */
-@media (min-width: 640px) {
-  .app-container {
-    padding: 2rem;
-  }
-  
-  .button-group {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .btn {
-    width: auto;
-  }
-}
-
-@media (min-width: 768px) {
-  .content-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .map-wrapper {
-    height: 20rem;
-  }
-}
-
-/* Helper classes */
-.cursor-not-allowed {
-  cursor: not-allowed;
-}
-
-.opacity-50 {
-  opacity: 0.5;
-}
-
-/* Status message */
-.status-message {
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.status-message p {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-/* API note */
-.api-note {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.5rem;
-  text-align: center;
-}
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f3f4f6;
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
-/* Button styles */
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
-  outline: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-}
-
-.btn-primary {
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-}
-
-.btn-primary:hover {
-  background-color: #2563eb;
-}
-
-.btn-success {
-  background-color: #10b981;
-  color: white;
-  border: none;
-}
-
-.btn-success:hover {
-  background-color: #059669;
-}
-
-.btn-danger {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-}
-
-.btn-danger:hover {
-  background-color: #dc2626;
-}
-
-.btn-warning {
-  background-color: #f59e0b;
-  color: white;
-  border: none;
-}
-
-.btn-warning:hover {
-  background-color: #d97706;
-}
-
-/* Map container */
+/* Leaflet Map container adjustments */
 .map-container {
   width: 100%;
   height: 400px;
@@ -282,167 +31,28 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Utility classes */
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-
-.mt-4 {
-  margin-top: 1rem;
-}
-
-.p-4 {
-  padding: 1rem;
-}
-
-.p-6 {
-  padding: 1.5rem;
-}
-
-.rounded-lg {
-  border-radius: 0.5rem;
-}
-
-.shadow-md {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.bg-white {
-  background-color: white;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-gray-800 {
-  color: #1f2937;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
-/* Responsive adjustments */
-@media (min-width: 640px) {
-  .sm\:flex-row {
-    flex-direction: row;
-  }
-}
-
 @media (max-width: 640px) {
   .map-container {
     height: 300px;
   }
 }
 
-/* Grid utilities */
-.grid {
-  display: grid;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.grid-cols-1 {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
-@media (min-width: 768px) {
-  .md\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
-/* Max width container */
-.max-w-4xl {
-  max-width: 56rem;
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-.mx-auto {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Text sizes */
-.text-lg {
-  font-size: 1.125rem;
-  line-height: 1.75rem;
-}
-
-.font-semibold {
-  font-weight: 600;
-}
-
-.text-gray-700 {
-  color: #374151;
-}
-
-.text-gray-600 {
-  color: #4b5563;
-}
-
-.space-y-2 > * + * {
-  margin-top: 0.5rem;
-}
-
-.space-y-3 > * + * {
-  margin-top: 0.75rem;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-/* Background colors */
-.bg-gray-50 {
-  background-color: #f9fafb;
-}
-
-/* Text sizes */
-.text-xs {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.text-gray-500 {
-  color: #6b7280;
-}
-
-/* Cursor utilities */
-.cursor-not-allowed {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* Disabled state */
-:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}

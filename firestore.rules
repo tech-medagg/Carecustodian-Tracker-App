@@ -1,0 +1,193 @@
+// firestore.rules
+// Production Firestore security rules for Salesman Tracker V2 (Field Sales Management System).
+//
+// Deploy with: firebase deploy --only firestore:rules
+//
+// Role hierarchy: super_admin > admin > salesman
+// Roles are stored in Firestore: users/{uid}.role
+// Never inferred from email address or any other client-supplied field.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    // Fetch the caller's user document.
+    function callerProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function callerRole() {
+      return callerProfile().role;
+    }
+
+    function isUserActive() {
+      return isAuthenticated()
+        && callerProfile().status != 'inactive'
+        && callerProfile().status != 'disabled';
+    }
+
+    function isAdmin() {
+      return isUserActive()
+        && (callerRole() == 'admin' || callerRole() == 'super_admin');
+    }
+
+    function isSuperAdmin() {
+      return isUserActive() && callerRole() == 'super_admin';
+    }
+
+    function isSalesman() {
+      return isUserActive() && callerRole() == 'salesman';
+    }
+
+    // ── users collection ────────────────────────────────────────────────────
+    // /users/{userId}
+    match /users/{userId} {
+
+      // Any active authenticated user can read their own profile.
+      allow read: if isAuthenticated() && uid() == userId;
+
+      // Admins can read all user profiles (for directory & management).
+      allow read: if isAdmin();
+
+      // A user may create their own profile on first login ONLY with the
+      // default 'salesman' role. Admins can create profiles for others.
+      allow create: if
+        (isAuthenticated() && uid() == userId
+          && request.resource.data.role == 'salesman'
+          && request.resource.data.uid == userId)
+        || isAdmin();
+
+      // A user may update their own non-sensitive fields (name, phone, etc.).
+      // They cannot change role, status, teamId, or uid themselves.
+      allow update: if isUserActive() && uid() == userId
+        && !request.resource.data.diff(resource.data)
+              .affectedKeys()
+              .hasAny(['role', 'status', 'teamId', 'uid']);
+
+      // Admins can update any field on any user profile (role promotion, deactivation, etc.).
+      allow update: if isAdmin();
+
+      // Only super_admins can delete user documents.
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── trips collection ────────────────────────────────────────────────────
+    // /trips/{tripId}
+    match /trips/{tripId} {
+
+      // Salesmen can only read their own trips.
+      allow read: if isUserActive() && resource.data.userId == uid();
+
+      // Admins can read all trips (for admin dashboard).
+      allow read: if isAdmin();
+
+      // A salesman may create a trip only for themselves.
+      allow create: if isUserActive()
+        && request.resource.data.userId == uid()
+        && isSalesman();
+
+      // A salesman may only update their own trips.
+      // They cannot change the userId field (prevents impersonation).
+      allow update: if isUserActive()
+        && resource.data.userId == uid()
+        && request.resource.data.userId == uid();
+
+      // Admins may update any trip (e.g. to annotate with visitId).
+      allow update: if isAdmin();
+
+      // Only admins can delete trips.
+      allow delete: if isAdmin();
+    }
+
+    // ── customers collection (Hospitals / Clinics / Doctors) ────────────────
+    // /customers/{customerId}
+    match /customers/{customerId} {
+      // Any authenticated active user can read customers to select or visit them
+      allow read: if isUserActive();
+
+      // Admins and authenticated sales staff can create or update customer details
+      allow create, update: if isUserActive();
+
+      // Only admins can delete customer records
+      allow delete: if isAdmin();
+    }
+
+    // ── visits collection ───────────────────────────────────────────────────
+    // /visits/{visitId}
+    match /visits/{visitId} {
+      // Salesmen can read their assigned visits; Admins can read all visits
+      allow read: if isUserActive() && (isAdmin() || resource.data.assignedTo == uid());
+
+      // Admins can create and assign visits; Salesmen can create visits for themselves
+      allow create: if isUserActive() && (isAdmin() || request.resource.data.assignedTo == uid());
+
+      // Salesmen can update their assigned visits (check-in, outcomes, completion); Admins can update any.
+      // Non-admins CANNOT change the assignedTo field (prevents unauthorized reassignment).
+      allow update: if isUserActive() && (
+        isAdmin() ||
+        (
+          resource.data.assignedTo == uid() &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['assignedTo'])
+        )
+      );
+
+      // Only admins can delete visits
+      allow delete: if isAdmin();
+    }
+
+    // ── leads collection ─────────────────────────────────────────────────────
+    // /leads/{leadId}
+    match /leads/{leadId} {
+      allow read: if isUserActive() && (isAdmin() || resource.data.salesmanId == uid());
+      allow create: if isUserActive() && (isAdmin() || request.resource.data.salesmanId == uid());
+      allow update: if isUserActive() && (
+        isAdmin() ||
+        (
+          resource.data.salesmanId == uid() &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['salesmanId'])
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ── followUps collection ─────────────────────────────────────────────────
+    // /followUps/{followUpId}
+    match /followUps/{followUpId} {
+      allow read: if isUserActive() && (isAdmin() || resource.data.salesmanId == uid());
+      allow create: if isUserActive() && (isAdmin() || request.resource.data.salesmanId == uid());
+      allow update: if isUserActive() && (
+        isAdmin() ||
+        (
+          resource.data.salesmanId == uid() &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['salesmanId'])
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ── auditLogs collection (Immutable Append-Only Audit Trail) ─────────────
+    // /auditLogs/{logId}
+    match /auditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isUserActive();
+      allow update, delete: if false; // Strict immutability
+    }
+
+    // ── settings collection ──────────────────────────────────────────────────
+    // /settings/{settingId}
+    match /settings/{settingId} {
+      allow read: if isUserActive();
+      allow write: if isAdmin();
+    }
+  }
+}

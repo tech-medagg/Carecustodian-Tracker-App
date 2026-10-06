@@ -1,220 +1,246 @@
-import React, { useEffect, Suspense, useMemo } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { CircularProgress, Box } from '@mui/material';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { TripsProvider } from './contexts/TripsContext'; 
-import MainLayout from './components/common/MainLayout';
-import Login from './pages/Auth/Login';
-import NotFound from './pages/Shared/NotFound';
-import Unauthorized from './pages/Shared/Unauthorized';
-import ProtectedRoute from './components/common/ProtectedRoute';
+// src/App.js
+// Root application component.
+// Defines the routing tree and wraps routes with role-based guards.
 
-// Lazy load components for code splitting
+import React, { Suspense } from 'react';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { Box, CircularProgress, Typography, Alert } from '@mui/material';
+
+import { selectCurrentUser } from './store/authSlice';
+import { ADMIN_ROLES, ALL_ROLES, ROLES } from './constants/roles';
+import { ROUTES } from './constants/routes';
+
+import MainLayout from './components/layout/MainLayout';
+import LoginPage from './pages/Login/LoginPage';
+import RoleGuard from './features/auth/RoleGuard';
+import UnauthorizedPage from './features/auth/UnauthorizedPage';
+
+// ── Lazy-loaded page bundles ──────────────────────────────────────────────────
 const AdminDashboard = React.lazy(() => import('./pages/Admin/Dashboard'));
-const SalesDashboard = React.lazy(() => import('./pages/Sales/Dashboard'));
-const SalesTripTracker = React.lazy(() => import('./pages/Sales/TripTracker'));
-const AdminSalesTeam = React.lazy(() => import('./pages/Admin/SalesTeam'));
-const AdminReports = React.lazy(() => import('./pages/Admin/Reports'));
-const AdminSettings = React.lazy(() => import('./pages/Admin/Settings'));
-const Profile = React.lazy(() => import('./pages/Shared/Profile'));
+const AdminSalesmenPage = React.lazy(() => import('./pages/Admin/SalesmenPage'));
+const AdminVisitsPage = React.lazy(() => import('./pages/Admin/VisitsPage'));
+const AdminCustomersPage = React.lazy(() => import('./pages/Admin/CustomersPage'));
+const AdminFollowUpsPage = React.lazy(() => import('./pages/Admin/FollowUpsPage'));
+const AdminReportsPage = React.lazy(() => import('./pages/Admin/ReportsPage'));
 
-// Loading component
+const SalesDashboard = React.lazy(() => import('./pages/Sales/Dashboard'));
+const SalesVisitsPage = React.lazy(() => import('./pages/Sales/VisitsPage'));
+const SalesFollowUpsPage = React.lazy(() => import('./pages/Sales/FollowUpsPage'));
+const SalesTripsPage = React.lazy(() => import('./pages/Sales/TripsPage'));
+const ProfilePage = React.lazy(() => import('./pages/Sales/ProfilePage'));
+
+// ── Loading spinner ───────────────────────────────────────────────────────────
 const LoadingSpinner = () => (
-  <Box 
-    display="flex" 
-    justifyContent="center" 
-    alignItems="center" 
+  <Box
+    display="flex"
+    flexDirection="column"
+    justifyContent="center"
+    alignItems="center"
     minHeight="100vh"
   >
-    <CircularProgress />
+    <CircularProgress size={48} thickness={4} />
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+      Loading…
+    </Typography>
   </Box>
 );
 
-// Memoized theme creation
-const useTheme = () => {
-  return useMemo(() => createTheme({
-    palette: {
-      primary: {
-        main: '#3f51b5',
-      },
-      secondary: {
-        main: '#f50057',
-      },
-      background: {
-        default: '#f5f5f5',
-      },
-    },
-    typography: {
-      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-      h1: {
-        fontSize: '2.5rem',
-        fontWeight: 500,
-      },
-      h2: {
-        fontSize: '2rem',
-        fontWeight: 500,
-      },
-      h3: {
-        fontSize: '1.75rem',
-        fontWeight: 500,
-      },
-      h4: {
-        fontSize: '1.5rem',
-        fontWeight: 500,
-      },
-      h5: {
-        fontSize: '1.25rem',
-        fontWeight: 500,
-      },
-      h6: {
-        fontSize: '1rem',
-        fontWeight: 500,
-      },
-    },
-    components: {
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            borderRadius: 8,
-          },
-        },
-      },
-      MuiCard: {
-        styleOverrides: {
-          root: {
-            borderRadius: 12,
-            boxShadow: '0 4px 20px 0 rgba(0,0,0,0.05)',
-          },
-        },
-      },
-    },
-  }), []);
-};
-
-// A component to handle navigation registration
-const NavigationHandler = () => {
-  const { registerNavigate } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Register the navigate function with the auth context
-    registerNavigate(navigate);
-  }, [navigate, registerNavigate]);
-
-  return null;
-};
-
-// A component to redirect based on user role
-const RoleBasedRedirect = () => {
-  const { user } = useAuth();
-  
-  if (user?.role === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
-  } else if (user?.role === 'sales') {
-    return <Navigate to="/sales/dashboard" replace />;
+// ── Error boundary ────────────────────────────────────────────────────────────
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
   }
-  
-  return <Navigate to="/login" replace />;
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('App Error Boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Box 
+          display="flex" 
+          flexDirection="column"
+          justifyContent="center" 
+          alignItems="center" 
+          minHeight="100vh"
+          p={3}
+        >
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <Typography variant="h6">Something went wrong</Typography>
+            <Typography variant="body2">
+              {this.state.error?.message || 'An unexpected error occurred'}
+            </Typography>
+          </Alert>
+          <Typography variant="body2" color="text.secondary">
+            Please refresh the page or contact support if the problem persists.
+          </Typography>
+        </Box>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// ── Root redirect ─────────────────────────────────────────────────────────────
+// Sends authenticated users to the correct dashboard based on their Firestore role.
+// Unauthenticated users are sent to /login.
+const RootRedirect = () => {
+  const user = useSelector(selectCurrentUser);
+
+  if (!user) return <Navigate to={ROUTES.LOGIN} replace />;
+
+  if (ADMIN_ROLES.includes(user.role)) {
+    return <Navigate to={ROUTES.ADMIN} replace />;
+  }
+
+  return <Navigate to={ROUTES.SALES_VISITS} replace />;
 };
 
-const AppContent = () => {
+// ── App ───────────────────────────────────────────────────────────────────────
+function App() {
   return (
-    <>
-      <NavigationHandler />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        {/* Protected routes */}
-        <Route element={
-          <ProtectedRoute>
-            <MainLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute roles={['admin']}>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AdminDashboard />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin/sales-team" element={
-            <ProtectedRoute roles={['admin']}>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AdminSalesTeam />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin/reports" element={
-            <ProtectedRoute roles={['admin']}>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AdminReports />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin/settings" element={
-            <ProtectedRoute roles={['admin']}>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AdminSettings />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Suspense fallback={<LoadingSpinner />}>
-                <Profile />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/sales/dashboard" element={
-            <ProtectedRoute roles={['sales', 'admin']}>
-              <Suspense fallback={<LoadingSpinner />}>
-                <SalesDashboard />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/sales/trips" element={
-            <ProtectedRoute roles={['sales', 'admin']}>
-              <Suspense fallback={<LoadingSpinner />}>
-                <SalesTripTracker />
-              </Suspense>
-            </ProtectedRoute>
-          } />
-          
-          <Route index element={<RoleBasedRedirect />} />
-        </Route>
-        
-        <Route path="/unauthorized" element={<Unauthorized />} />
-        <Route path="/404" element={<NotFound />} />
-        <Route path="*" element={<Navigate to="/404" replace />} />
-      </Routes>
-    </>
-  );
-};
-
-const App = () => {
-  const theme = useTheme();
-  
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ErrorBoundary>
       <Router>
-        <AuthProvider>
-          <TripsProvider> 
-            <AppContent />
-          </TripsProvider>
-        </AuthProvider>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* ── Public routes ──────────────────────────────────────── */}
+            <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+            <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
+
+            {/* ── Admin routes (super_admin + admin only) ────────────── */}
+            <Route
+              path={ROUTES.ADMIN}
+              element={
+                <RoleGuard allowedRoles={ADMIN_ROLES}>
+                  <MainLayout>
+                    <AdminDashboard />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.ADMIN_VISITS}
+              element={
+                <RoleGuard allowedRoles={ADMIN_ROLES}>
+                  <MainLayout>
+                    <AdminVisitsPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.ADMIN_CUSTOMERS}
+              element={
+                <RoleGuard allowedRoles={ADMIN_ROLES}>
+                  <MainLayout>
+                    <AdminCustomersPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.ADMIN_FOLLOW_UPS}
+              element={
+                <RoleGuard allowedRoles={ADMIN_ROLES}>
+                  <MainLayout>
+                    <AdminFollowUpsPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.ADMIN_SALESMEN}
+              element={
+                <RoleGuard allowedRoles={ADMIN_ROLES}>
+                  <MainLayout>
+                    <AdminSalesmenPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.ADMIN_REPORTS}
+              element={
+                <RoleGuard allowedRoles={ADMIN_ROLES}>
+                  <MainLayout>
+                    <AdminReportsPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+
+            {/* ── Salesman routes ────────────────────────────────────── */}
+            <Route
+              path={ROUTES.SALES_VISITS}
+              element={
+                <RoleGuard allowedRoles={[ROLES.SALESMAN]}>
+                  <MainLayout>
+                    <SalesVisitsPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.SALES}
+              element={
+                <RoleGuard allowedRoles={[ROLES.SALESMAN]}>
+                  <MainLayout>
+                    <SalesDashboard />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.SALES_FOLLOW_UPS}
+              element={
+                <RoleGuard allowedRoles={[ROLES.SALESMAN]}>
+                  <MainLayout>
+                    <SalesFollowUpsPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+            <Route
+              path={ROUTES.SALES_TRIPS}
+              element={
+                <RoleGuard allowedRoles={[ROLES.SALESMAN]}>
+                  <MainLayout>
+                    <SalesTripsPage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+
+            {/* ── Shared profile route (all authenticated users) ─────── */}
+            <Route
+              path={ROUTES.SALES_PROFILE}
+              element={
+                <RoleGuard allowedRoles={ALL_ROLES}>
+                  <MainLayout>
+                    <ProfilePage />
+                  </MainLayout>
+                </RoleGuard>
+              }
+            />
+
+            {/* ── Root — role-based redirect ─────────────────────────── */}
+            <Route path={ROUTES.HOME} element={<RootRedirect />} />
+
+            {/* ── Catch-all ──────────────────────────────────────────── */}
+            <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+          </Routes>
+        </Suspense>
       </Router>
-    </ThemeProvider>
+    </ErrorBoundary>
   );
-};
+}
 
 export default App;

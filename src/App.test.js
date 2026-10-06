@@ -1,8 +1,19 @@
 import { render, screen } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { ThemeProvider } from '@mui/material';
+import { store } from './store/store';
+import theme from './theme/theme';
 import App from './App';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('renders Salesman Tracker login header', async () => {
+  render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <App />
+      </ThemeProvider>
+    </Provider>
+  );
+  const headings = await screen.findAllByText(/Salesman Tracker/i);
+  expect(headings.length).toBeGreaterThan(0);
 });
+
